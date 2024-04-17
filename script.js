@@ -1,4 +1,8 @@
 const gameContainer = document.getElementById("game");
+let pairsMatched = 0;
+let firstCard = null;
+let secondCard = null;
+let lockedBoard = false; 
 
 const COLORS = [
   "red",
@@ -61,6 +65,47 @@ function createDivsForColors(colorArray) {
 function handleCardClick(event) {
   // you can use event.target to see which element was clicked
   console.log("you just clicked", event.target);
+  if (lockedBoard) return; 
+  if (event.target.classList.contains("flipped")) return;
+
+  let currentCard = event.target;
+  currentCard.style.backgroundColor = currentCard.classList[0];
+
+  if (!firstCard || !secondCard) {
+    currentCard.classList.add("flipped");
+    firstCard = firstCard || currentCard;
+    secondCard = currentCard === firstCard ? null : currentCard;
+  }
+
+  if (firstCard && secondCard) {
+    lockedBoard = true;
+
+    if (firstCard.className === secondCard.className) {
+      pairsMatched++;
+      firstCard.removeEventListener("click", handleCardClick);
+      secondCard.removeEventListener("click", handleCardClick);
+      firstCard = null;
+      secondCard = null;
+      lockedBoard = false;
+      console.log("Pairs Matched:", pairsMatched);
+      console.log("Total pairs:", COLORS.length / 2);
+      if (pairsMatched === COLORS.length / 2) {
+        setTimeout(() => {
+          alert("Game Over!");
+        }, 500);
+      }
+    } else {
+      setTimeout(function() {
+        firstCard.style.backgroundColor = "";
+        secondCard.style.backgroundColor = "";
+        firstCard.classList.remove("flipped");
+        secondCard.classList.remove("flipped");
+        firstCard = null;
+        secondCard = null;
+        lockedBoard = false;
+      }, 1000);
+    }
+}
 }
 
 // when the DOM loads
